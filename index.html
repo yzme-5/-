@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>田课通 · 村干部的AI农事信息助手</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --green-deep: #1a5c3a;
+    --green-primary: #2e8b57;
+    --green-light: #4ca671;
+    --green-pale: #e8f5e9;
+    --green-bg: #f1f8e9;
+    --orange: #f57c00;
+    --orange-light: #ffe0b2;
+    --text-dark: #1b1b1b;
+    --text-body: #333;
+    --text-gray: #666;
+    --bg-white: #ffffff;
+    --bg-soft: #fafafa;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.12);
+    --radius: 14px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-body);
+    background: var(--bg-white);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ===== Nav ===== */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    z-index: 100;
+    transition: all 0.3s;
+  }
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--green-deep);
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--green-primary), var(--green-light));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px;
+  }
+  .nav-links { display: flex; gap: 28px; list-style: none; }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-body);
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--green-primary); }
+  .nav-cta {
+    background: var(--green-primary);
+    color: #fff !important;
+    padding: 8px 20px;
+    border-radius: 8px;
+  }
+  .nav-cta:hover { background: var(--green-deep) !important; }
+
+  /* ===== Hero ===== */
+  .hero {
+    min-height: 100vh;
+    padding: 140px 0 80px;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(46,139,87,0.12), transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(245,124,0,0.08), transparent 50%),
+      var(--bg-white);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    bottom: -60px; left: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(46,139,87,0.08), transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--green-pale);
+    color: var(--green-deep);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: 52px;
+    line-height: 1.2;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+  }
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--green-primary), var(--green-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--text-gray);
+    margin-bottom: 36px;
+    line-height: 1.8;
+  }
+  .hero-cta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .btn {
+    padding: 14px 30px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--green-primary);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(46,139,87,0.3);
+  }
+  .btn-primary:hover { background: var(--green-deep); transform: translateY(-2px); }
+  .btn-secondary {
+    background: #fff;
+    color: var(--text-dark);
+    border: 1px solid #e0e0e0;
+  }
+  .btn-secondary:hover { border-color: var(--green-primary); color: var(--green-primary); }
+
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+  }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--green-primary);
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-gray);
+    margin-top: 2px;
+  }
+
+  .hero-visual {
+    position: relative;
+  }
+  .phone-mockup {
+    width: 280px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 36px;
+    padding: 14px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .phone-screen {
+    background: linear-gradient(180deg, var(--green-pale) 0%, #fff 100%);
+    border-radius: 26px;
+    padding: 20px 16px;
+    min-height: 480px;
+  }
+  .phone-header {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green-deep);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #c8e6c9;
+  }
+  .msg {
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    margin-bottom: 10px;
+    max-width: 85%;
+    line-height: 1.6;
+  }
+  .msg-user {
+    background: var(--green-primary);
+    color: #fff;
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+  }
+  .msg-bot {
+    background: #fff;
+    color: var(--text-body);
+    border: 1px solid #e8e8e8;
+    border-bottom-left-radius: 4px;
+  }
+  .msg-bot .tag {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--orange-light);
+    color: var(--orange);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .floating-card {
+    position: absolute;
+    background: #fff;
+    padding: 14px 18px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: float 3s ease-in-out infinite;
+  }
+  .fc-1 { top: 30px; left: -20px; animation-delay: 0s; }
+  .fc-2 { bottom: 60px; right: -30px; animation-delay: 1.5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .fc-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .fc-icon.green { background: var(--green-pale); color: var(--green-primary); }
+  .fc-icon.orange { background: var(--orange-light); color: var(--orange); }
+
+  /* ===== Section ===== */
+  section { padding: 100px 0; }
+  .section-title {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  .section-label {
+    display: inline-block;
+    color: var(--green-primary);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .section-title h2 {
+    font-size: 38px;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .section-title p {
+    color: var(--text-gray);
+    font-size: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ===== Pain Points ===== */
+  .pain {
+    background: var(--bg-soft);
+  }
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  .pain-card {
+    background: #fff;
+    padding: 36px 28px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s;
+    border-top: 3px solid transparent;
+  }
+  .pain-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+    border-top-color: var(--orange);
+  }
+  .pain-num {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--orange);
+    margin-bottom: 14px;
+  }
+  .pain-card h3 {
+    font-size: 18px;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+  }
+  .pain-card p {
+    color: var(--text-gray);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .quote-box {
+    margin-top: 36px;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, var(--green-pale), #fff);
+    border-radius: var(--radius);
+    border-left: 4px solid var(--green-primary);
+    font-style: italic;
+    color: var(--text-body);
+  }
+  .quote-box .quote-author {
+    display: block;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-gray);
+    font-style: normal;
+  }
+
+  /* ===== Features ===== */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  .feature-card {
+    background: #fff;
+    padding: 40px 32px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s;
+    text-align: center;
+  }
+  .feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+  }
+  .feature-icon {
+    width: 64px; height: 64px;
+    background: var(--green-pale);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 20px;
+  }
+  .feature-card h3 {
+    font-size: 20px;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+  }
+  .feature-card p {
+    color: var(--text-gray);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .feature-list {
+    margin-top: 16px;
+    text-align: left;
+    list-style: none;
+  }
+  .feature-list li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--text-gray);
+    display: flex;
+    gap: 8px;
+  }
+  .feature-list li::before {
+    content: "✓";
+    color: var(--green-primary);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ===== Data ===== */
+  .data {
+    background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-primary) 100%);
+    color: #fff;
+  }
+  .data .section-label { color: rgba(255,255,255,0.7); }
+  .data .section-title h2 { color: #fff; }
+  .data .section-title p { color: rgba(255,255,255,0.8); }
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+  .data-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 32px 24px;
+    border-radius: var(--radius);
+    text-align: center;
+  }
+  .data-num {
+    font-size: 44px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+  }
+  .data-label {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+  .data-bar {
+    background: rgba(255,255,255,0.1);
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+  .bar-item {
+    margin-bottom: 16px;
+  }
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .bar-track {
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--orange), #ffab40);
+    border-radius: 5px;
+    transition: width 1s ease;
+  }
+
+  /* ===== Business Model ===== */
+  .model-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  .model-card {
+    padding: 36px;
+    border-radius: var(--radius);
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s;
+  }
+  .model-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+  .model-card.featured {
+    background: linear-gradient(135deg, var(--green-deep), var(--green-primary));
+    color: #fff;
+    transform: scale(1.04);
+  }
+  .model-card.featured h3, .model-card.featured .model-price { color: #fff; }
+  .model-card.featured p, .model-card.featured .model-note { color: rgba(255,255,255,0.8); }
+  .model-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background: var(--green-pale);
+    color: var(--green-deep);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .model-card.featured .model-tag {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+  }
+  .model-card h3 {
+    font-size: 20px;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+  }
+  .model-price {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--green-primary);
+    margin-bottom: 8px;
+  }
+  .model-price small {
+    font-size: 14px;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+  .model-note {
+    font-size: 13px;
+    color: var(--text-gray);
+    line-height: 1.7;
+  }
+
+  /* ===== Team ===== */
+  .team { background: var(--bg-soft); }
+  .team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .team-card {
+    background: #fff;
+    padding: 48px 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+  }
+  .avatar {
+    width: 120px; height: 120px;
+    background: linear-gradient(135deg, var(--green-primary), var(--green-light));
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+    color: #fff;
+    font-weight: 700;
+  }
+  .team-card h3 {
+    font-size: 24px;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+  }
+  .team-role {
+    color: var(--green-primary);
+    font-weight: 600;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  .team-info {
+    font-size: 14px;
+    color: var(--text-gray);
+    line-height: 1.8;
+  }
+  .ai-team {
+    background: #fff;
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+  .ai-team h3 {
+    font-size: 20px;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ai-depts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .ai-dept {
+    padding: 16px;
+    background: var(--green-pale);
+    border-radius: 10px;
+  }
+  .ai-dept-name {
+    font-weight: 600;
+    color: var(--green-deep);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .ai-dept-desc {
+    font-size: 12px;
+    color: var(--text-gray);
+  }
+
+  /* ===== Roadmap ===== */
+  .roadmap {
+    position: relative;
+    padding: 40px 0;
+  }
+  .roadbar {
+    position: absolute;
+    top: 80px; left: 10%; right: 10%;
+    height: 4px;
+    background: #e0e0e0;
+    z-index: 0;
+  }
+  .roadbar-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    width: 33%;
+    background: linear-gradient(90deg, var(--green-primary), var(--green-light));
+  }
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    position: relative;
+    z-index: 1;
+  }
+  .road-step {
+    text-align: center;
+  }
+  .road-circle {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--green-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--green-primary);
+    margin: 0 auto 20px;
+  }
+  .road-step.active .road-circle {
+    background: var(--green-primary);
+    color: #fff;
+  }
+  .road-step h4 {
+    font-size: 18px;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+  }
+  .road-step .road-time {
+    font-size: 13px;
+    color: var(--green-primary);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .road-step p {
+    font-size: 14px;
+    color: var(--text-gray);
+    line-height: 1.7;
+  }
+
+  /* ===== CTA ===== */
+  .cta {
+    background: linear-gradient(135deg, var(--green-deep), var(--green-primary));
+    text-align: center;
+    color: #fff;
+  }
+  .cta .section-title h2 { color: #fff; }
+  .cta .section-title p { color: rgba(255,255,255,0.85); }
+  .cta-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+  .cta .btn-primary {
+    background: #fff;
+    color: var(--green-deep);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  .cta .btn-primary:hover { background: var(--green-pale); }
+  .cta .btn-secondary {
+    background: transparent;
+    color: #fff;
+    border-color: rgba(255,255,255,0.5);
+  }
+  .cta .btn-secondary:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+  /* ===== Footer ===== */
+  footer {
+    padding: 40px 0;
+    background: #1b1b1b;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    font-size: 13px;
+  }
+  footer .logo {
+    justify-content: center;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+
+  /* ===== Interactive Demo ===== */
+  .demo {
+    background: linear-gradient(180deg, var(--green-pale) 0%, var(--bg-white) 100%);
+  }
+  .demo-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .demo-scenarios h3 {
+    font-size: 18px;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .scenario-btn {
+    width: 100%;
+    padding: 16px 20px;
+    background: #fff;
+    border: 2px solid #e8e8e8;
+    border-radius: 14px;
+    margin-bottom: 14px;
+    text-align: left;
+    font-size: 15px;
+    color: var(--text-body);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .scenario-btn:hover {
+    border-color: var(--green-light);
+    background: var(--green-pale);
+    transform: translateX(4px);
+  }
+  .scenario-btn.active {
+    border-color: var(--green-primary);
+    background: var(--green-primary);
+    color: #fff;
+  }
+  .scenario-btn .sc-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--green-pale);
+    color: var(--green-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .scenario-btn.active .sc-icon {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+  }
+  .scenario-btn .sc-text strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+  .scenario-btn .sc-text span {
+    font-size: 12px;
+    opacity: 0.7;
+  }
+  .demo-chat {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+  }
+  .demo-chat-header {
+    background: linear-gradient(135deg, var(--green-deep), var(--green-primary));
+    padding: 18px 24px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .demo-chat-header .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    margin: 0;
+  }
+  .demo-chat-header h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .demo-chat-header span {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  .demo-chat-body {
+    padding: 24px;
+    min-height: 360px;
+    max-height: 500px;
+    overflow-y: auto;
+    background: #fafafa;
+  }
+  .dmsg {
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    max-width: 85%;
+    line-height: 1.7;
+    animation: fadeInUp 0.3s ease;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .dmsg-user {
+    background: var(--green-primary);
+    color: #fff;
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+  }
+  .dmsg-bot {
+    background: #fff;
+    color: var(--text-body);
+    border: 1px solid #eee;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .dmsg-bot .dtag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .dtag-green { background: var(--green-pale); color: var(--green-deep); }
+  .dtag-orange { background: var(--orange-light); color: var(--orange); }
+  .dmsg-bot .dstep {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--green-pale);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .dmsg-bot .dstep-title {
+    font-weight: 600;
+    color: var(--green-deep);
+    margin-bottom: 4px;
+  }
+  .dmsg-bot .dsource {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #eee;
+    font-size: 12px;
+    color: var(--text-gray);
+  }
+  .dmsg-bot .dwarn {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: #fff8e1;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--orange);
+  }
+  .demo-input-row {
+    padding: 16px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+    background: #fff;
+  }
+  .demo-input-row input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .demo-input-row input:focus { border-color: var(--green-primary); }
+  .demo-input-row button {
+    padding: 10px 18px;
+    background: var(--green-primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .demo-input-row button:hover { background: var(--green-deep); }
+  .typing {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px 0;
+  }
+  .typing span {
+    width: 6px; height: 6px;
+    background: var(--text-gray);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 900px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+    .hero h1 { font-size: 38px; }
+    .hero-stats { gap: 24px; }
+    .pain-grid, .features-grid, .model-cards, .data-grid { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: 1fr; }
+    .roadbar { display: none; }
+    .roadmap-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .model-card.featured { transform: none; }
+    .ai-depts { grid-template-columns: 1fr; }
+    .floating-card { display: none; }
+    .demo-wrap { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="logo">
+      <div class="logo-icon">🌾</div>
+      <span>田课通</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#pain">痛点</a></li>
+      <li><a href="#features">功能</a></li>
+      <li><a href="#data">数据</a></li>
+      <li><a href="#model">商业模式</a></li>
+      <li><a href="#team">团队</a></li>
+      <li><a href="#demo" class="nav-cta">立即体验</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <span class="hero-badge">✨ MVP 已上线 · 58 次真实使用</span>
+        <h1>
+          让村干部<br>
+          <span class="highlight">敢转发</span>的<br>
+          农事信息助手
+        </h1>
+        <p class="hero-sub">
+          可信 · 本地化 · 说人话 · 可转发<br>
+          为村干部、农技员解决"不知道信谁"的第一痛点
+        </p>
+        <div class="hero-cta">
+          <a href="#demo" class="btn btn-primary">🚀 体验 MVP</a>
+          <a href="#features" class="btn btn-secondary">了解功能</a>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="stat-num">58<span style="font-size:18px">次</span></div>
+            <div class="stat-label">真实使用</div>
+          </div>
+          <div>
+            <div class="stat-num">12<span style="font-size:18px">人</span></div>
+            <div class="stat-label">实测用户</div>
+          </div>
+          <div>
+            <div class="stat-num">8<span style="font-size:18px">人</span></div>
+            <div class="stat-label">留资意向</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="phone-header">🌾 田课通 AI 助手</div>
+            <div class="msg msg-user">玉米叶片发黄，可能是什么问题？</div>
+            <div class="msg msg-bot">
+              <span class="tag">辽宁 · 沈阳</span><br>
+              根据描述，可能是缺氮或根腐病。<br><br>
+              <b>处理建议：</b><br>
+              1. 先检查根系是否腐烂<br>
+              2. 追施尿素 15kg/亩<br>
+              3. 7天后观察恢复情况<br><br>
+              <span style="color:#999;font-size:11px">⚠ 建议来自本地知识库，仅供参考</span>
+            </div>
+            <div class="msg msg-user">这条补贴政策是真的吗？</div>
+            <div class="msg msg-bot">
+              <span class="tag">待核实</span>
+              信息表述模糊，建议转发前先咨询当地农技站：024-XXXX-XXXX
+            </div>
+          </div>
+        </div>
+        <div class="floating-card fc-1">
+          <div class="fc-icon green">✓</div>
+          <div><b>官方来源</b><br><span style="color:#999;font-size:11px">可追溯</span></div>
+        </div>
+        <div class="floating-card fc-2">
+          <div class="fc-icon orange">⚡</div>
+          <div><b>3 步出结果</b><br><span style="color:#999;font-size:11px">不用等</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pain Points -->
+<section class="pain" id="pain">
+  <div class="container">
+    <div class="section-title">
+      <div class="section-label">01 · 痛点</div>
+      <h2>不是"没信息"，是"不知道信谁"</h2>
+      <p>3 份村干部访谈 + 32 份农户问卷交叉验证</p>
+    </div>
+
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-num">痛点 01</div>
+        <h3>病虫害防治信息杂</h3>
+        <p>群里发的农药广告不知道该不该信，网上信息不本地化，不敢直接照搬，错过关键处理时机。</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-num">痛点 02</div>
+        <h3>政策补贴看不懂</h3>
+        <p>补贴文件太长、太官方，看半天也不知道自己能不能领、怎么领。问村干部，他们也得现查。</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-num">痛点 03</div>
+        <h3>微信群信息真假难辨</h3>
+        <p>谣言、广告、过时信息混在一起，村干部转发怕担责，农户看了更困惑。</p>
+      </div>
+    </div>
+
+    <div class="quote-box">
+      "群里发的农药广告，不知道该不该信。补贴文件太长，看半天也不知道能不能领。"
+      <span class="quote-author">—— 村干部访谈原声（FT-01 / FT-02 / FT-03）</span>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="container">
+    <div class="section-title">
+      <div class="section-label">02 · 解决方案</div>
+      <h2>三大核心功能，直击三大痛点</h2>
+      <p>Coze 智能体已上线，完成 58 次真实使用、12 人测试</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🌱</div>
+        <h3>病虫害三步建议</h3>
+        <p>输入作物、地区、生育期、症状，输出"识别 → 处理 → 注意事项"</p>
+        <ul class="feature-list">
+          <li>本地化知识库匹配</li>
+          <li>关键期主动提醒</li>
+          <li>附官方来源参考</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>政策白话解读</h3>
+        <p>分"谁能领 → 领多少 → 怎么领 → 问谁"，复杂文件一键变大白话</p>
+        <ul class="feature-list">
+          <li>上传政策文件即可解读</li>
+          <li>附申请材料清单</li>
+          <li>可转发卡片一键生成</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>信息真伪提示</h3>
+        <p>对微信群常见信息做真假判断，不确定时明确标注"待核实"</p>
+        <ul class="feature-list">
+          <li>谣言自动识别</li>
+          <li>过时信息预警</li>
+          <li>本地农技站联系方式</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Demo -->
+<section class="demo" id="demo">
+  <div class="container">
+    <div class="section-title">
+      <div class="section-label">03 · 在线体验</div>
+      <h2>试试田课通，真实场景模拟</h2>
+      <p>点击左侧场景快速体验，或在下方输入框自由提问</p>
+    </div>
+
+    <div class="demo-wrap">
+      <div class="demo-scenarios">
+        <h3>🎯 选择一个真实场景</h3>
+        <button class="scenario-btn active" data-sc="pest">
+          <div class="sc-icon">🌱</div>
+          <div class="sc-text">
+            <strong>病虫害三步建议</strong>
+            <span>玉米叶片发黄，辽宁沈阳，拔节期</span>
+          </div>
+        </button>
+        <button class="scenario-btn" data-sc="policy">
+          <div class="sc-icon">📄</div>
+          <div class="sc-text">
+            <strong>政策白话解读</strong>
+            <span>2026 辽宁种粮补贴谁能领？</span>
+          </div>
+        </button>
+        <button class="scenario-btn" data-sc="factcheck">
+          <div class="sc-icon">🔍</div>
+          <div class="sc-text">
+            <strong>信息真伪判断</strong>
+            <span>"今年化肥要涨价 50%"真的吗？</span>
+          </div>
+        </button>
+        <button class="scenario-btn" data-sc="fertilizer">
+          <div class="sc-icon">💧</div>
+          <div class="sc-text">
+            <strong>施肥关键期提醒</strong>
+            <span>水稻分蘖期，辽宁盘锦，怎么施肥？</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="demo-chat">
+        <div class="demo-chat-header">
+          <div class="avatar">🌾</div>
+          <div>
+            <h4>田课通 AI 助手</h4>
+            <span>在线 · 本地知识库 · 人工复核</span>
+          </div>
+        </div>
+        <div class="demo-chat-body" id="demoBody">
+          <div class="dmsg dmsg-bot">
+            <span class="dtag dtag-green">辽宁 · 沈阳</span><br>
+            你好！我是田课通 🌾<br>
+            选择左侧场景或直接提问，我会给出三步处理建议 + 官方来源。
+          </div>
+        </div>
+        <div class="demo-input-row">
+          <input type="text" id="demoInput" placeholder="输入你的农事问题...">
+          <button onclick="sendDemo()">发送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Data -->
+<section class="data" id="data">
+  <div class="container">
+    <div class="section-title">
+      <div class="section-label">03 · 数据验证</div>
+      <h2>真实用户，真实数据</h2>
+      <p>问卷 36 份 / 有效 32 份，覆盖沈北、辽中、苏家屯农户群</p>
+    </div>
+
+    <div class="data-grid">
+      <div class="data-card">
+        <div class="data-num">78%</div>
+        <div class="data-label">遇技术问题先问熟人/农资店</div>
+      </div>
+      <div class="data-card">
+        <div class="data-num">65%</div>
+        <div class="data-label">认为网上信息不本地化</div>
+      </div>
+      <div class="data-card">
+        <div class="data-num">55%</div>
+        <div class="data-label">村集体统一购买愿意使用</div>
+      </div>
+      <div class="data-card">
+        <div class="data-num">8人</div>
+        <div class="data-label">留资意向，等待试点</div>
+      </div>
+    </div>
+
+    <div class="data-bar">
+      <div class="bar-item">
+        <div class="bar-label"><span>不知道信谁</span><span style="font-weight:600">82%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:82%"></div></div>
+      </div>
+      <div class="bar-item">
+        <div class="bar-label"><span>信息不本地化</span><span style="font-weight:600">65%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:65%"></div></div>
+      </div>
+      <div class="bar-item">
+        <div class="bar-label"><span>政策看不懂</span><span style="font-weight:600">58%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:58%"></div></div>
+      </div>
+      <div class="bar-item">
+        <div class="bar-label"><span>愿意村集体采购</span><span style="font-weight:600">55%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:55%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Business Model -->
+<section id="model">
+  <div class="container">
+    <div class="section-title">
+      <div class="section-label">04 · 商业模式</div>
+      <h2>向村集体收费，不向单个农户收费</h2>
+      <p>先免费试点 1—2 个村验证付费意愿</p>
+    </div>
+
+    <div class="model-cards">
+      <div class="model-card">
+        <div class="model-tag">谁付费</div>
+        <h3>行政村 / 合作社</h3>
+        <div class="model-price">¥999<small>/村/年</small></div>
+        <p class="model-note">村干部不用自己现查，转发出去的内容有来源、有"待核实"标注</p>
+      </div>
+      <div class="model-card featured">
+        <div class="model-tag">核心价值</div>
+        <h3>可信 · 可转发</h3>
+        <div class="model-price">订阅<small>服务包</small></div>
+        <p class="model-note">含问答额度、政策白话解读、可转发卡片，为村集体统一采购设计</p>
+      </div>
+      <div class="model-card">
+        <div class="model-tag">定价依据</div>
+        <h3>待试点验证</h3>
+        <div class="model-price">500-1000<small>元/年</small></div>
+        <p class="model-note">访谈中村干部可接受村集体 500-1000 元/年，此价待试点验证</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="team" id="team">
+  <div class="container">
+    <div class="section-title">
+      <div class="section-label">05 · 团队</div>
+      <h2>我是 CEO，AI 是我的五个部门</h2>
+      <p>所有 AI 产出人工复核 · 虚假数据当次零分</p>
+    </div>
+
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="avatar">刘</div>
+        <h3>刘铧聪</h3>
+        <div class="team-role">CEO · 最终判断</div>
+        <div class="team-info">
+          沈阳农业大学 · 农学院农学二班<br>
+          学号：2024101052 · 巴士组<br>
+          负责调研、访谈、决策与真实性把关<br>
+          所有 AI 产出人工复核
+        </div>
+      </div>
+
+      <div class="ai-team">
+        <h3>🤖 AI 协作体系</h3>
+        <div class="ai-depts">
+          <div class="ai-dept">
+            <div class="ai-dept-name">📊 调研部</div>
+            <div class="ai-dept-desc">DeepSeek / 豆包 · 桌面调研、访谈提纲、政策竞品收集</div>
+          </div>
+          <div class="ai-dept">
+            <div class="ai-dept-name">✍️ 文案部</div>
+            <div class="ai-dept-desc">DeepSeek / Kimi · 公众号话术、政策白话解读、转发卡片</div>
+          </div>
+          <div class="ai-dept">
+            <div class="ai-dept-name">🎨 设计部</div>
+            <div class="ai-dept-desc">即梦 / Canva AI · 封面图、信息卡片、流程图</div>
+          </div>
+          <div class="ai-dept">
+            <div class="ai-dept-name">💬 客服部</div>
+            <div class="ai-dept-desc">豆包 / DeepSeek · 模拟农户问答、整理 FAQ、未知转人工</div>
+          </div>
+          <div class="ai-dept">
+            <div class="ai-dept-name">📈 数据部</div>
+            <div class="ai-dept-desc">豆包 + Excel · 问卷清洗、访谈编码、周数据看板</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Roadmap -->
+<section>
+  <div class="container">
+    <div class="section-title">
+      <div class="section-label">06 · 发展规划</div>
+      <h2>6 个月三步走，跑通一个村再复制</h2>
+      <p>早期聚焦沈阳周边 3—5 个村镇，目标 50—100 名村干部</p>
+    </div>
+
+    <div class="roadmap">
+      <div class="roadbar"><div class="roadbar-fill"></div></div>
+      <div class="roadmap-grid">
+        <div class="road-step active">
+          <div class="road-circle">1</div>
+          <h4>MVP 与真实测试</h4>
+          <div class="road-time">第 1—2 月 ✓</div>
+          <p>完成智能体迭代，村干部/农技员实测 58 次，验证核心痛点真实存在</p>
+        </div>
+        <div class="road-step">
+          <div class="road-circle">2</div>
+          <h4>试点 1—2 个村</h4>
+          <div class="road-time">第 3—4 月</div>
+          <p>免费进入真实村委，验证付费意愿与续用，沉淀本地化知识库</p>
+        </div>
+        <div class="road-step">
+          <div class="road-circle">3</div>
+          <h4>可复制服务包</h4>
+          <div class="road-time">第 5—6 月</div>
+          <p>沉淀标准服务包，申请创业政策支持，拓展周边村镇</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="cta">
+  <div class="container">
+    <div class="section-title">
+      <div class="section-label">🌾 田课通</div>
+      <h2>让村干部敢转发的农事信息</h2>
+      <p>Coze 智能体已上线，欢迎体验真实 MVP</p>
+    </div>
+    <div class="cta-buttons">
+      <a href="#demo" class="btn btn-primary">🚀 在线体验 MVP</a>
+      <a href="#" class="btn btn-secondary">申请村集体试点</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon">🌾</div>
+      <span>田课通</span>
+    </div>
+    <p>沈阳农业大学 · AI+OPC 创业实践课程项目</p>
+    <p style="margin-top:8px;opacity:0.6">刘铧聪 · 2024101052 · 农学院农学二班 · 巴士组</p>
+    <p style="margin-top:16px;opacity:0.5">© 2026 田课通 · 让村干部敢转发的农事信息助手</p>
+  </div>
+</footer>
+
+<script>
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY + 200;
+    sections.forEach(section => {
+      const top = section.offsetTop;
+      const bottom = top + section.offsetHeight;
+      const id = section.getAttribute('id');
+      if (scrollY >= top && scrollY < bottom) {
+        navLinks.forEach(link => {
+          link.style.color = link.getAttribute('href') === '#' + id ? 'var(--green-primary)' : '';
+        });
+      }
+    });
+  });
+
+  const demoData = {
+    pest: {
+      user: '玉米叶片发黄，辽宁沈阳，拔节期，怎么办？',
+      bot: `<span class="dtag dtag-green">辽宁 · 沈阳 · 玉米拔节期</span><br>
+            根据症状描述，结合沈阳地区近期气候（连续阴雨 7 天+），初步判断：<b>可能缺氮 或 根腐病早期</b>。
+            <div class="dstep">
+              <div class="dstep-title">🔍 第 1 步：先确认</div>
+              蹲下看根系——如果根发黑发软 = 根腐病；如果根正常但叶片从下往上黄 = 缺氮
+            </div>
+            <div class="dstep">
+              <div class="dstep-title">💊 第 2 步：对应处理</div>
+              · 缺氮 → 追施尿素 15kg/亩，雨后撒施<br>
+              · 根腐病 → 恶霉灵 3000 倍液灌根，5 天 1 次，连灌 2 次
+            </div>
+            <div class="dstep">
+              <div class="dstep-title">⚠ 第 3 步：注意事项</div>
+              沈阳 6 月中下旬多雨，注意排水防涝；7 天后观察，叶片恢复绿色即有效
+            </div>
+            <div class="dsource">📎 来源：辽宁省农技推广总站《玉米病虫害防治手册 2025》+ 沈阳农业大学农学院试验数据</div>`
+    },
+    policy: {
+      user: '2026 辽宁种粮补贴谁能领？怎么领？',
+      bot: `<span class="dtag dtag-green">政策白话 · 辽宁省 2026</span><br>
+            给你翻译成人话版 👇
+            <div class="dstep">
+              <div class="dstep-title">👤 谁能领</div>
+              种玉米/水稻/小麦的 <b>实际种植者</b>（可以是农户、合作社、家庭农场），土地流转的也能领，但要确权证
+            </div>
+            <div class="dstep">
+              <div class="dstep-title">💰 领多少</div>
+              · 玉米：约 100-120 元/亩<br>
+              · 水稻：约 180-200 元/亩<br>
+              （具体金额等省里最终通知，每年略有浮动）
+            </div>
+            <div class="dstep">
+              <div class="dstep-title">📝 怎么领</div>
+              6-7 月村委通知 → 拿确权证/流转合同去村委会登记 → 审核通过后 8 月底前直接打社保卡
+            </div>
+            <div class="dstep">
+              <div class="dstep-title">❓ 找谁问</div>
+              乡镇农业服务中心 / 当地农技站 024-XXXX-XXXX
+            </div>
+            <div class="dsource">📎 来源：辽宁省财政厅 + 辽宁省农业农村厅联合文件（辽财农〔2026〕XX 号）</div>
+            <div class="dwarn">💡 村干部小贴士：今年新增"黑土地保护"专项补贴，种粮补贴和这个可以同时领！</div>`
+    },
+    factcheck: {
+      user: '"今年化肥要涨价 50%，赶紧囤货！"群里发的，真的吗？',
+      bot: `<span class="dtag dtag-orange">⚠ 待核实 · 高风险</span><br>
+            <b>这条信息大概率是谣言 🔴</b>
+            <div class="dstep">
+              <div class="dstep-title">🔍 核实过程</div>
+              1. 全国农技推广中心近期未发布涨价预警<br>
+              2. 辽化、北方华锦等辽宁主要化肥企业报价稳定<br>
+              3. 2026 年化肥价格实际比 2025 年略有下降
+            </div>
+            <div class="dstep">
+              <div class="dstep-title">💡 建议做法</div>
+              不要跟风囤货！需要买化肥可以等春耕前 1-2 个月再看价格，多对比几家农资店
+            </div>
+            <div class="dstep">
+              <div class="dstep-title">📢 转发提醒</div>
+              这条消息 <b>建议不要转发</b>，避免误导农户。可以把我的核实结果发群里澄清
+            </div>
+            <div class="dsource">📎 来源：全国农技中心 + 辽宁省农资价格监测周报（2026 W38）</div>
+            <div class="dwarn">⚠ 田课通标注：此类"赶紧囤货+涨价 X%"组合话术，90% 是农资经销商制造的焦虑营销，已被标记为高频谣言模板</div>`
+    },
+    fertilizer: {
+      user: '水稻分蘖期，辽宁盘锦，怎么施肥？',
+      bot: `<span class="dtag dtag-green">辽宁 · 盘锦 · 水稻分蘖期</span><br>
+            盘锦盐碱地稻区，分蘖期施肥要"稳氮增磷补钾"👇
+            <div class="dstep">
+              <div class="dstep-title">🎯 第 1 步：看苗情</div>
+              分蘖数 < 15 株/穴 = 偏少，需要追肥；> 20 株/穴 = 够了，不用追
+            </div>
+            <div class="dstep">
+              <div class="dstep-title">💧 第 2 步：施什么、施多少</div>
+              · 尿素 7-10 kg/亩（分蘖偏弱的用上限）<br>
+              · 氯化钾 5 kg/亩（盘锦盐碱地特别需要补钾）<br>
+              · 建议分 2 次施，间隔 7-10 天
+            </div>
+            <div class="dstep">
+              <div class="dstep-title">⚠ 第 3 步：关键注意</div>
+              <b>必须浅水层施肥</b>（水深 3-5 cm），施肥后自然落干，千万不要大水漫灌，容易烧根
+            </div>
+            <div class="dsource">📎 来源：盘锦市农技推广中心《盐碱地水稻栽培技术规程 2026》+ 沈阳农业大学水稻所试验数据</div>`
+    }
+  };
+
+  const fallbackReplys = [
+    `<span class="dtag dtag-green">通用建议</span><br>
+     你的问题我记下了！作为 MVP 版本，我的知识库目前侧重 <b>玉米 / 水稻 / 设施蔬菜</b> 和 <b>辽宁省内政策</b>。
+     <div class="dwarn">💡 你可以试试左侧的 4 个真实场景，体验更完整的三步建议格式 + 官方来源标注</div>`,
+    `<span class="dtag dtag-orange">⚠ 待核实</span><br>
+     这个问题的答案需要结合你所在的<b>具体地区和作物品种</b>，建议补充说明。
+     <div class="dsource">📎 田课通原则：信息不确定时明确标注"待核实"，建议咨询当地农技站</div>`,
+    `<span class="dtag dtag-green">信息已接收</span><br>
+     感谢提问！田课通的 MVP 版本知识库持续更新中，正式版会支持更多作物和地区。
+     <div class="dwarn">🌾 村干部实测反馈：政策解读功能最受欢迎，"待核实"标注帮大家避免了好几个谣言</div>`
+  ];
+
+  const demoBody = document.getElementById('demoBody');
+  const demoInput = document.getElementById('demoInput');
+
+  function addUserMsg(text) {
+    const div = document.createElement('div');
+    div.className = 'dmsg dmsg-user';
+    div.textContent = text;
+    demoBody.appendChild(div);
+    demoBody.scrollTop = demoBody.scrollHeight;
+  }
+
+  function addTyping() {
+    const div = document.createElement('div');
+    div.className = 'dmsg dmsg-bot';
+    div.id = 'typing';
+    div.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+    demoBody.appendChild(div);
+    demoBody.scrollTop = demoBody.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
+
+  function addBotMsg(html) {
+    const div = document.createElement('div');
+    div.className = 'dmsg dmsg-bot';
+    div.innerHTML = html;
+    demoBody.appendChild(div);
+    demoBody.scrollTop = demoBody.scrollHeight;
+  }
+
+  function triggerScenario(key) {
+    const data = demoData[key];
+    if (!data) return;
+    document.querySelectorAll('.scenario-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.sc === key);
+    });
+    addUserMsg(data.user);
+    addTyping();
+    setTimeout(() => {
+      removeTyping();
+      addBotMsg(data.bot);
+    }, 1200);
+  }
+
+  document.querySelectorAll('.scenario-btn').forEach(btn => {
+    btn.addEventListener('click', () => triggerScenario(btn.dataset.sc));
+  });
+
+  function sendDemo() {
+    const text = demoInput.value.trim();
+    if (!text) return;
+    addUserMsg(text);
+    demoInput.value = '';
+    addTyping();
+    setTimeout(() => {
+      removeTyping();
+      let reply;
+      if (/玉米|玉米叶|缺氮|根腐/.test(text)) reply = demoData.pest.bot;
+      else if (/补贴|政策|种粮|领钱/.test(text)) reply = demoData.policy.bot;
+      else if (/真的吗|真假|谣言|是不是/.test(text)) reply = demoData.factcheck.bot;
+      else if (/水稻|施肥|分蘖|插秧/.test(text)) reply = demoData.fertilizer.bot;
+      else reply = fallbackReplys[Math.floor(Math.random() * fallbackReplys.length)];
+      addBotMsg(reply);
+    }, 1200);
+  }
+
+  demoInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendDemo();
+  });
+</script>
+
+</body>
+</html>
